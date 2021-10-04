@@ -52,6 +52,24 @@ from pvrecorder import PvRecorder
 #   pip install pywhatkit
 import pywhatkit
 
+from datetime import datetime as dt
+
+# wikipedia 1.4.0
+# https://pypi.org/project/wikipedia/
+#   pip install wikipedia
+# Alternatives:
+#   Pywikipediabot
+#     http://www.mediawiki.org/wiki/Manual:Pywikipediabot
+#   Python MediaWiki API wrappers
+#     http://en.wikipedia.org/wiki/Wikipedia:Creating_a_bot#Python
+#
+import wikipedia
+
+# pyjokes 0.6.0
+# https://pypi.org/project/pyjokes/
+#   pip install pyjokes
+import pyjokes
+
 
 def get_hotword(keywords=None, sensitivities=None):
     """
@@ -133,13 +151,31 @@ def get_command():
 
 def alexa():
     command = get_command()
+    print(command)
 
     # Play a video on YouTube
     if 'play' in command:
         song = command.replace('play', '')
         talk('playing' + song)
         pywhatkit.playonyt(song)
-
+    elif 'time' in command:
+        talk(f'It is {dt.now().strftime("%H:%M")}')
+    elif 'wikipedia' in command:
+        command = command.replace('wikipedia', '')
+        results = wikipedia.search(command)
+        talk(f'List of results: {results}')
+        talk('Which one would you like?')
+        command = get_command()
+        print(command)
+        summary = wikipedia.summary(command)
+        talk(summary)
+    elif 'joke' in command:
+        talk(pyjokes.get_joke())
+    elif 'quit' in command:
+        return True
+    else:
+        talk("I can't help with that.")
+    return False
 
 def main():
     # rate = engine.getProperty('rate')
@@ -149,8 +185,11 @@ def main():
     # test_voices(voices)
     engine.setProperty('voice', voices[2].id)
 
-    # get_hotword()
-    alexa()
+    while True:
+        # get_hotword()
+        stop_alexa = alexa()
+        if stop_alexa:
+            break
 
 
 if __name__ == '__main__':
